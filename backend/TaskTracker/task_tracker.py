@@ -51,6 +51,29 @@ def list_tasks(status=None):
     for task in filtered_tasks:
         print(f"{task['id']:<5} {task['status']:<15} {task['description']}")
 
+def update_task(task_id, description=None, status=None):
+    """Update a task's description or status."""
+    initialize_file()
+    with open(TASKS_FILE, "r") as file:
+        tasks = json.load(file)
+    
+    task = next((t for t in tasks if t["id"] == task_id), None)
+    if not task:
+        print(f"Task with ID {task_id} not found.")
+        return
+    
+    if description:
+        task["description"] = description
+    if status:
+        task["status"] = status
+    
+    task["updatedAt"] = datetime.now().isoformat()
+    
+    with open(TASKS_FILE, "w") as file:
+        json.dump(tasks, file, indent=4)
+    
+    print(f"Task {task_id} updated successfully.")
+
 def main():
     parser = argparse.ArgumentParser(description="Task Tracker CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -63,6 +86,12 @@ def main():
     list_parser = subparsers.add_parser("list", help="List tasks")
     list_parser.add_argument("--status", choices=["todo", "in-progress", "done"], help="Filter tasks by status")
 
+    # Update command
+    update_parser = subparsers.add_parser("update", help="Update a task")
+    update_parser.add_argument("id", type=int, help="Task ID")
+    update_parser.add_argument("--description", help="New task description")
+    update_parser.add_argument("--status", choices=["todo", "in-progress", "done"], help="New task status")
+
     # Parse arguments
     args = parser.parse_args()
 
@@ -70,6 +99,8 @@ def main():
         add_task(args.description)
     elif args.command == "list":
         list_tasks(args.status)
+    elif args.command == "update":
+        update_task(args.id, args.description, args.status)
     else:
         print("Invalid command or missing arguments.")
 
