@@ -74,6 +74,25 @@ def update_task(task_id, description=None, status=None):
     
     print(f"Task {task_id} updated successfully.")
 
+def delete_task(task_id):
+    """Delete a task by ID."""
+    initialize_file()
+    with open(TASKS_FILE, "r") as file:
+        tasks = json.load(file)
+
+    task = next((t for t in tasks if t["id"] == task_id), None)
+    if not task:
+        print(f"Task with ID {task_id} not found.")
+        return
+
+    tasks = [t for t in tasks if t["id"] != task_id]
+
+    with open(TASKS_FILE, "w") as file:
+        json.dump(tasks, file, indent=4)
+
+    print(f"Task {task_id} deleted successfully.")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Task Tracker CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -92,6 +111,11 @@ def main():
     update_parser.add_argument("--description", help="New task description")
     update_parser.add_argument("--status", choices=["todo", "in-progress", "done"], help="New task status")
 
+    # Delete command
+    delete_parser = subparsers.add_parser("delete", help="Delete a task")
+    delete_parser.add_argument("id", type=int, help="Task ID")
+    
+
     # Parse arguments
     args = parser.parse_args()
 
@@ -101,6 +125,8 @@ def main():
         list_tasks(args.status)
     elif args.command == "update":
         update_task(args.id, args.description, args.status)
+    elif args.command == "delete":
+        delete_task(args.id)
     else:
         print("Invalid command or missing arguments.")
 
