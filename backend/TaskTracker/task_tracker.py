@@ -19,7 +19,7 @@ def add_task(description):
         tasks = json.load(file)
     
     task = {
-        "id": len(tasks) + 1,
+        "id": 1 if not tasks else tasks[-1]["id"] + 1,
         "description": description,
         "status": "todo",
         "createdAt": datetime.now().isoformat(),
